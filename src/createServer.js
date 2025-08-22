@@ -1,7 +1,7 @@
 'use strict';
 
 const userRouter = require('./Users/users.routes');
-const expensesRouter = require('./expenses/expenses.routes');
+const expensesRouter = require('./Expenses/expenses.routes');
 const usersData = require('./resources/usersData');
 const expensesData = require('./resources/expenseData');
 const express = require('express');

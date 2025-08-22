@@ -37,7 +37,7 @@ class ExpensesController {
 
   postOne(req, res) {
     const expenseItem = req.body;
-    const { userId } = expenseItem;
+    const { userId, title, amount, category } = expenseItem;
 
     const userExists = usersService.getOneUser(userId);
 
@@ -45,6 +45,10 @@ class ExpensesController {
       res.status(400).send({ message: 'User not found' });
 
       return;
+    }
+
+    if (userId == null || title == null || amount == null || category == null) {
+      return res.status(400).json({ message: 'Missing required fields' });
     }
 
     const newExpenseItem = expensesService.createExpense(expenseItem);
@@ -59,7 +63,7 @@ class ExpensesController {
 
     const wrongData =
       (title && typeof title !== 'string') ||
-      (amount && (amount === 0 || typeof amount !== 'number')) ||
+      ('amount' in paramsToUpdate && typeof amount !== 'number') ||
       (category && typeof category !== 'string') ||
       (note && typeof note !== 'string');
 

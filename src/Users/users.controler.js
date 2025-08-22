@@ -73,7 +73,7 @@ class UsersController {
       return;
     }
 
-    res.status(204).send(deletedUser);
+    res.status(204).send();
   }
 }
 
