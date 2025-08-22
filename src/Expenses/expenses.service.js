@@ -1,82 +1,68 @@
-/**
- * @typedef {Object} Expense
- * @property {number} [id]
- * @property {number} userId
- * @property {Date} spentAt
- * @property {string} title
- * @property {number} amount
- * @property {string} category
- * @property {string} note
- */
+const expensesData = require('../resources/expenseData');
+const { expenses, expenseCount } = expensesData;
 
-const expenses = [];
+const getAllExpenses = ({ userId, categories, from, to }) => {
+  return expenses.filter((expense) => {
+    if (userId && expense.userId !== userId) {
+      return false;
+    }
 
-/**
- * @returns {Expense[]}
- */
-function getExpenses() {
-  return [...expenses];
-}
+    if (categories && !categories.includes(expense.category)) {
+      return false;
+    }
 
-/**
- * @param {Expense} expense
- * @returns {Expense}
- */
-function createExpense(expense) {
-  const newExpense = {
-    ...expense,
-    id: Date.now(),
+    if (from && new Date(expense.spentAt) < from) {
+      return false;
+    }
+
+    if (to && new Date(expense.spentAt) > to) {
+      return false;
+    }
+
+    return true;
+  });
+};
+
+const getOneExpense = (id) => {
+  return expenses.find((e) => e.id === id) || null;
+};
+
+const createExpense = (expenseItem) => {
+  const newItem = {
+    id: expenseCount(),
+    ...expenseItem,
   };
 
-  expenses.push(newExpense);
+  expenses.push(newItem);
+  expensesData.incrementCount();
 
-  return newExpense;
-}
+  return newItem;
+};
 
-/**
- * @param {number} id
- * @returns {Expense | undefined}
- */
-function getExpenseById(id) {
-  return expenses.find((expense) => expense.id === id);
-}
+const updateExpense = (id, paramsToUpdate) => {
+  const itemToUpdate = expenses.find((e) => e.id === id);
 
-/**
- * @param {number} id
- * @returns {boolean}
- */
-function deleteExpenseById(id) {
-  const index = expenses.findIndex((expense) => expense.id === id);
+  Object.assign(itemToUpdate, paramsToUpdate);
+
+  return itemToUpdate;
+};
+
+const deleteExpense = (id) => {
+  const index = expenses.findIndex((e) => e.id === id);
 
   if (index === -1) {
-    return false;
-  }
-  expenses.splice(index, 1);
-
-  return true;
-}
-
-/**
- * @param {number} id
- * @param {Partial<Expense>} updated
- * @returns {Expense | undefined}
- */
-function updateExpenseById(id, updated) {
-  const expense = getExpenseById(id);
-
-  if (!expense) {
-    return undefined;
+    return null;
   }
 
-  Object.assign(expense, updated);
+  const deletedExpense = expenses.splice(index, 1);
 
-  return expense;
-}
+  return deletedExpense[0];
+};
 
 module.exports = {
-  getExpenses,
+  getAllExpenses,
+  getOneExpense,
   createExpense,
-  getExpenseById,
-  deleteExpenseById,
-  updateExpenseById,
+  updateExpense,
+  deleteExpense,
 };

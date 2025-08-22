@@ -1,73 +1,82 @@
-const {
-  createUser,
-  deleteUserById,
-  getUserById,
-  getUsers,
-  updateUserById,
-} = require('./users.service');
+const usersService = require('../users/users.service');
 
-const getAll = async (req, res) => {
-  const users = await getUsers();
+class UsersController {
+  getAll(req, res) {
+    const usersList = usersService.getAllUsers();
 
-  return res.json(users);
-};
-
-const create = async (req, res) => {
-  const { name } = req.body;
-
-  if (!name) {
-    return res.status(400).json({ error: 'Name is required' });
+    res.status(200).send(usersList);
   }
 
-  const user = { id: Date.now(), name };
-  const newUser = await createUser(user);
+  getOne(req, res) {
+    const id = Number(req.params.id);
+    const user = usersService.getOneUser(id);
 
-  return res.status(201).json(newUser);
-};
+    if (!user) {
+      res.sendStatus(404);
 
-const getById = async (req, res) => {
-  const id = Number(req.params.id);
-  const user = await getUserById(id);
+      return;
+    }
 
-  if (!user) {
-    return res.status(404).json({ error: 'User not found' });
+    res.status(200).send(user);
   }
 
-  return res.json(user);
-};
+  postOne(req, res) {
+    const userData = req.body;
+    const { name } = userData;
 
-const deleteById = async (req, res) => {
-  const id = Number(req.params.id);
-  const success = await deleteUserById(id);
+    const isRequiredFieldsMissing = !name;
+    const wrongData = typeof name !== 'string';
 
-  if (!success) {
-    return res.status(404).json({ error: 'User not found' });
+    if (isRequiredFieldsMissing || wrongData) {
+      res.sendStatus(400);
+
+      return;
+    }
+
+    const newUser = usersService.createUser(userData);
+
+    res.status(201).send(newUser);
   }
 
-  return res.status(204).send();
-};
+  updateOne(req, res) {
+    const paramsToUpdate = req.body;
+    const id = Number(req.params.id);
+    const { name } = paramsToUpdate;
 
-const updateById = async (req, res) => {
-  const id = Number(req.params.id);
-  const updatedUser = req.body;
+    // Only validate fields that are being updated
+    const wrongData = name !== undefined && typeof name !== 'string';
 
-  if (!updatedUser.name) {
-    return res.status(400).json({ error: 'Name is required' });
+    if (wrongData) {
+      res.sendStatus(400);
+
+      return;
+    }
+
+    const updatedUser = usersService.updateUser(id, paramsToUpdate);
+
+    if (!updatedUser) {
+      res.sendStatus(404);
+
+      return;
+    }
+
+    res.status(200).send(updatedUser);
   }
 
-  const user = await updateUserById(id, updatedUser);
+  delete(req, res) {
+    const id = Number(req.params.id);
+    const deletedUser = usersService.deleteUser(id);
 
-  if (!user) {
-    return res.status(404).json({ error: 'User not found' });
+    if (!deletedUser) {
+      res.sendStatus(404);
+
+      return;
+    }
+
+    res.sendStatus(204);
   }
+}
 
-  return res.json(user);
-};
+const usersController = new UsersController();
 
-module.exports = {
-  getAll,
-  create,
-  getById,
-  deleteById,
-  updateById,
-};
+module.exports = usersController;

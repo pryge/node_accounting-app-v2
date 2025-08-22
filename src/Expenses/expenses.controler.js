@@ -1,86 +1,101 @@
-const {
-  getExpenses,
-  createExpense,
-  getExpenseById,
-  deleteExpenseById,
-  updateExpenseById,
-} = require('./expenses.service');
+const expensesService = require('./expenses.service');
+const usersService = require('../users/users.service');
 
-/**
- * @type {import('express').RequestHandler}
- */
-const getAll = async (req, res) => {
-  res.json(getExpenses());
-};
+class ExpensesController {
+  getAll(req, res) {
+    const { userId, categories, from, to } = req.query;
 
-/**
- * @type {import('express').RequestHandler}
- */
-const create = (req, res) => {
-  const { userId, spentAt, title, amount, category, note } = req.body;
+    const filters = {
+      userId: userId ? Number(userId) : null,
+      categories: Array.isArray(categories)
+        ? categories
+        : categories
+          ? [categories]
+          : null,
+      from: from ? new Date(from) : null,
+      to: to ? new Date(to) : null,
+    };
 
-  if (!userId || !spentAt || !title || !amount || !category || !note) {
-    return res.status(400).json({ error: 'Missing required fields' });
+    const expensesList = expensesService.getAllExpenses(filters);
+
+    res.status(200).send(expensesList);
   }
 
-  const newExpense = createExpense({
-    userId,
-    spentAt: new Date(spentAt),
-    title,
-    amount,
-    category,
-    note,
-  });
+  getOne(req, res) {
+    const id = Number(req.params.id);
 
-  res.status(201).json(newExpense);
-};
+    const expensesItem = expensesService.getOneExpense(id);
 
-/**
- * @type {import('express').RequestHandler}
- */
-const getById = (req, res) => {
-  const id = Number(req.params.id);
-  const expense = getExpenseById(id);
+    if (!expensesItem) {
+      res.sendStatus(404);
 
-  if (!expense) {
-    return res.status(404).json({ error: 'Expense not found' });
+      return;
+    }
+
+    res.status(200).send(expensesItem);
   }
 
-  res.json(expense);
-};
+  postOne(req, res) {
+    const expenseItem = req.body;
+    const { userId } = expenseItem;
 
-/**
- * @type {import('express').RequestHandler}
- */
-const deleteById = (req, res) => {
-  const id = Number(req.params.id);
-  const success = deleteExpenseById(id);
+    const userExists = usersService.getOneUser(userId);
 
-  if (!success) {
-    return res.status(404).json({ error: 'Expense not found' });
+    if (!userExists) {
+      res.sendStatus(400);
+
+      return;
+    }
+
+    const newExpenseItem = expensesService.createExpense(expenseItem);
+
+    res.status(201).send(newExpenseItem);
   }
 
-  res.status(204).send();
-};
+  updateOne(req, res) {
+    const paramsToUpdate = req.body;
+    const id = Number(req.params.id);
+    const { title, amount, category, note } = paramsToUpdate;
 
-/**
- * @type {import('express').RequestHandler}
- */
-const updateById = (req, res) => {
-  const id = Number(req.params.id);
-  const updatedExpense = updateExpenseById(id, req.body);
+    const wrongData =
+      (title && typeof title !== 'string') ||
+      (amount && (amount === 0 || typeof amount !== 'number')) ||
+      (category && typeof category !== 'string') ||
+      (note && typeof note !== 'string');
 
-  if (!updatedExpense) {
-    return res.status(404).json({ error: 'Expense not found' });
+    if (wrongData) {
+      res.sendStatus(400);
+
+      return;
+    }
+
+    const requestedExpense = expensesService.getOneExpense(id);
+
+    if (!requestedExpense) {
+      res.sendStatus(404);
+
+      return;
+    }
+
+    const updatedItem = expensesService.updateExpense(id, paramsToUpdate);
+
+    res.status(200).send(updatedItem);
   }
 
-  res.json(updatedExpense);
-};
+  delete(req, res) {
+    const id = Number(req.params.id);
+    const deletedExpense = expensesService.deleteExpense(id);
 
-module.exports = {
-  getAll,
-  create,
-  getById,
-  deleteById,
-  updateById,
-};
+    if (!deletedExpense) {
+      res.sendStatus(404);
+
+      return;
+    }
+
+    res.sendStatus(204);
+  }
+}
+
+const expensesController = new ExpensesController();
+
+module.exports = expensesController;

@@ -1,34 +1,21 @@
 'use strict';
 
-// import express from 'express';
-// import { usersControler } from './Users/users.controler.js';
-
+const userRouter = require('./users/users.routes');
+const expensesRouter = require('./expenses/expenses.routes');
+const usersData = require('./resources/usersData');
+const expensesData = require('./resources/expenseData');
 const express = require('express');
-const usersControler = require('./Users/users.controler.js');
-const expensesController = require('./Expenses/expenses.controler.js');
 
 function createServer() {
-  // Use express to create a server
-  // Add a routes to the server
-  // Return the server (express app)
-
   const app = express();
+
+  usersData.resetUsers();
+  expensesData.resetExpenses();
 
   app.use(express.json());
 
-  // Users routes
-  app.get('/users', usersControler.getAll);
-  app.post('/users', usersControler.create);
-  app.get('/users/:id', usersControler.getById);
-  app.delete('/users/:id', usersControler.deleteById);
-  app.put('/users/:id', usersControler.updateById);
-
-  // Expenses routes
-  app.get('/expenses', expensesController.getAll);
-  app.post('/expenses', expensesController.create);
-  app.get('/expenses/:id', expensesController.getById);
-  app.delete('/expenses/:id', expensesController.deleteById);
-  app.put('/expenses/:id', expensesController.updateById);
+  app.use('/users', express.json(), userRouter);
+  app.use('/expenses', express.json(), expensesRouter);
 
   return app;
 }

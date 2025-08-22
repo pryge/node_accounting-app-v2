@@ -1,49 +1,54 @@
-const users = [];
+const usersData = require('../resources/usersData');
+const { users, userCount } = usersData;
 
-function getUsers() {
-  if (users.length === 0) {
-    return [];
+const getAllUsers = () => {
+  return users;
+};
+
+const getOneUser = (id) => {
+  return users.find((u) => u.id === id) || null;
+};
+
+const createUser = (userData) => {
+  const newUser = {
+    id: userCount(),
+    ...userData,
+  };
+
+  users.push(newUser);
+  usersData.incrementCount();
+
+  return newUser;
+};
+
+const updateUser = (id, paramsToUpdate) => {
+  const userToUpdate = users.find((u) => u.id === id);
+
+  if (!userToUpdate) {
+    return null;
   }
 
-  return users;
-}
+  Object.assign(userToUpdate, paramsToUpdate);
 
-function createUser(user) {
-  users.push(user);
+  return userToUpdate;
+};
 
-  return user;
-}
-
-function getUserById(id) {
-  return users.find((user) => user.id === id);
-}
-
-function deleteUserById(id) {
-  const index = users.findIndex((user) => user.id === id);
+const deleteUser = (id) => {
+  const index = users.findIndex((u) => u.id === id);
 
   if (index === -1) {
-    return false;
+    return null;
   }
-  users.splice(index, 1);
 
-  return true;
-}
+  const deletedUser = users.splice(index, 1);
 
-function updateUserById(id, updatedUser) {
-  const user = getUserById(id);
-
-  if (!user) {
-    return undefined;
-  }
-  Object.assign(user, updatedUser);
-
-  return user;
-}
+  return deletedUser[0];
+};
 
 module.exports = {
-  getUsers,
+  getAllUsers,
+  getOneUser,
   createUser,
-  getUserById,
-  deleteUserById,
-  updateUserById,
+  updateUser,
+  deleteUser,
 };
