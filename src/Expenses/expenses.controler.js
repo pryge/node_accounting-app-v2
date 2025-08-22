@@ -1,5 +1,5 @@
 const expensesService = require('./expenses.service');
-const usersService = require('../users/users.service');
+const usersService = require('../Users/users.service');
 
 class ExpensesController {
   getAll(req, res) {
