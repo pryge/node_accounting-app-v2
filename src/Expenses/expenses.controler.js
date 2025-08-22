@@ -27,7 +27,7 @@ class ExpensesController {
     const expensesItem = expensesService.getOneExpense(id);
 
     if (!expensesItem) {
-      res.sendStatus(404);
+      res.status(404).send({ message: 'Expense not found' });
 
       return;
     }
@@ -42,7 +42,7 @@ class ExpensesController {
     const userExists = usersService.getOneUser(userId);
 
     if (!userExists) {
-      res.sendStatus(400);
+      res.status(400).send({ message: 'User not found' });
 
       return;
     }
@@ -64,7 +64,7 @@ class ExpensesController {
       (note && typeof note !== 'string');
 
     if (wrongData) {
-      res.sendStatus(400);
+      res.status(400).send({ message: 'Wrong data' });
 
       return;
     }
@@ -72,7 +72,7 @@ class ExpensesController {
     const requestedExpense = expensesService.getOneExpense(id);
 
     if (!requestedExpense) {
-      res.sendStatus(404);
+      res.status(404).send({ message: 'Expense not found' });
 
       return;
     }
@@ -87,7 +87,7 @@ class ExpensesController {
     const deletedExpense = expensesService.deleteExpense(id);
 
     if (!deletedExpense) {
-      res.sendStatus(404);
+      res.status(404).send({ message: 'Expense not found' });
 
       return;
     }

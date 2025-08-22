@@ -12,7 +12,7 @@ class UsersController {
     const user = usersService.getOneUser(id);
 
     if (!user) {
-      res.sendStatus(404);
+      res.status(404).send({ message: 'User not found' });
 
       return;
     }
@@ -28,7 +28,7 @@ class UsersController {
     const wrongData = typeof name !== 'string';
 
     if (isRequiredFieldsMissing || wrongData) {
-      res.sendStatus(400);
+      res.status(400).send({ message: 'Wrong data' });
 
       return;
     }
@@ -47,7 +47,7 @@ class UsersController {
     const wrongData = name !== undefined && typeof name !== 'string';
 
     if (wrongData) {
-      res.sendStatus(400);
+      res.status(400).send({ message: 'Wrong data' });
 
       return;
     }
@@ -55,7 +55,7 @@ class UsersController {
     const updatedUser = usersService.updateUser(id, paramsToUpdate);
 
     if (!updatedUser) {
-      res.sendStatus(404);
+      res.status(404).send({ message: 'User not found' });
 
       return;
     }
@@ -68,12 +68,12 @@ class UsersController {
     const deletedUser = usersService.deleteUser(id);
 
     if (!deletedUser) {
-      res.sendStatus(404);
+      res.status(404).send({ message: 'User not found' });
 
       return;
     }
 
-    res.sendStatus(204);
+    res.status(204).send(deletedUser);
   }
 }
 
